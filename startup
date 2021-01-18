@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+echo "Initiating startup sequence for Horny."
+
+echo "Terminating any existing instances..."
+pkill -f "hornybot"
+
+echo "Checking for API keys..."
+KEY_DIR="keys"
+
+KEY="$KEY_DIR/discord-key"
+if test -f "$KEY"; 
+then
+    echo "$KEY found. Proceeding."
+else
+    echo "$KEY not found. Exiting."
+    exit
+fi
+
+KEY="$KEY_DIR/google-key"
+if test -f "$KEY"; 
+then
+    echo "$KEY found. Proceeding."
+else
+    echo "$KEY not found. Exiting."
+    exit
+fi
+
+echo "Launching the bot..."
+
+# Put a while loop here, checking for return codes?
+nohup python3 HornyBot/hornybot.py &
