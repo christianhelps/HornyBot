@@ -19,7 +19,12 @@ class ClientWrapper:
         if message.author == ClientWrapper.client.user:
             return
 
-        await commands.process_user_command(message)
+        # Don't process a message without the prefix.
+        if not message.content.startswith('!'):
+            return
+
+        # Strip the first word of the message and call the matching command function.
+        await getattr(commands, message.content.split()[0][1:], commands.invalid_command)(message)
 
 
     @client.event

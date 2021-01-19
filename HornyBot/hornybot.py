@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# hornybot.py
+# goodbot.py
 # Python 3.6
 
 import client_wrapper

@@ -4,77 +4,54 @@
 import asyncio
 import discord
 import random
+# HTTP requests.
 import requests
+# Server load data.
 import psutil
 import datetime
 
 STARTUP_TIME = datetime.datetime.now()
 
-def get_commands():
-    return ["hello", "help", "healthcheck"]
+async def invalid_command(message):
+    await message.channel.send("Invalid command.")
 
-            
-def get_current_weather_embed(request):
-    keyfile = open('keys/weather-key', 'r') 
-    WEATHER_TOKEN = keyfile.readline()
+
+async def hello(message):
+    await message.channel.send('Hello {0.author.mention}'.format(message))
+
+
+async def help(message):
+    command_list = ["hello", "help", "spank"]
+    await message.channel.send("Commands: " + ', '.join(command_list))
+
+
+async def spank(message):
+    keyfile = open('keys/google-key', 'r') 
+    GOOGLE_TOKEN = keyfile.readline()[:-1]
+
+    engine_file = open('keys/search-id', 'r') 
+    ENGINE_ID = engine_file.readline()[:-1]
+
+    json_request = {
+        "key": GOOGLE_TOKEN,
+        "cx": ENGINE_ID,
+        "q": "bondage spanking gif"
+    }
+        #"domain": "google.com",
+
+    response = requests.get(url = "https://www.googleapis.com/customsearch/v1", params = json_request) 
+    retriever_data = response.json()
+
+    #"api_key": os.getenv("GOOGLE_TOKEN")
+
+    retriever_embed = discord.Embed(colour = discord.Color.blue())
+    retriever_embed.title = "Spank!"
+    retriever_embed.description = '{0.author.mention} spanks {0.mentions[0].mention}'.format(message)
+    # retriever_embed.description = str(retriever_data['items'][random.randint(0,9)]['pagemap']['cse_image'][0]['src'])
+    # list from 0-99, shuffle the list, and the access the indicies in a for loop.
+    for data in retriever_data['items'][random.randint(0,9)]['pagemap']:
     
-    zipcode = request.split(' ')[1]
-    response = requests.get(url = "http://api.weatherapi.com/v1/current.json",
-                            params = {'q': zipcode, 'key': WEATHER_TOKEN})
-    weather_data = response.json()
-    print(weather_data)
+    # gif_url = str(retriever_data['items'][random.randint(0,9)]['pagemap']['cse_image'][0]['src'])
+    retriever_embed.set_image(url = gif_url)
 
-    # Messy string formatting to build our object to embed.
-    emb = discord.Embed(colour = discord.Color.blue())
-    emb.title = str(weather_data['location']['name']) + ", " + str(weather_data['location']['region']) 
-    emb.description = str(weather_data['current']['condition']['text']) + " and " \
-        + str(weather_data['current']['temp_f']) + "f with " \
-        + str(weather_data['current']['wind_mph']) + "mph of wind."
-    emb.set_image(url = "http://" + str(weather_data['current']['condition']['icon'])[2:])
-    
-    return emb
-
-            
-def get_health_embed():
-    cpu_val = psutil.cpu_percent()
-    ram_val = psutil.virtual_memory().percent
-
-    emb = discord.Embed(colour = discord.Color.green())
-    emb.title = str("System status: Nominal")
-    emb.description = "GoodBot instance has been live for " + str(datetime.datetime.now() - STARTUP_TIME ) \
-        + " \n Current server load: CPU Usage - " \
-        + str(cpu_val) + "%, RAM Usage - " + str(ram_val) + "%."
-    emb.set_image(url = "https://media3.giphy.com/media/JRmilld9HS2CjW0miL/giphy.gif")
-    
-    return emb
-
-            
-def process_simple_command(message):
-    if message.content.startswith('?hello'):
-        msg = 'Hello {0.author.mention}'.format(message)
-        return msg
-
-    
-    if message.content.startswith('?help'):
-        return "!hello,!help, !healthcheck"
-
-    return ""
-
-
-async def process_user_command(message):
-    # Don't process messages that don't have the prefix
-    if not message.content.startswith('!'):
-        return
-    
-    # Return quickly if the command doesn't match a known command.
-    if not message.content.split()[0][1:] in get_commands():
-        await message.channel.send("Invalid command.")
-        return
-        
-    if message.content.startswith('?healthcheck'):
-        health_embed = get_health_embed()
-        await message.channel.send(embed=health_embed)
-    
-    out_message = process_simple_command(message)
-    if out_message != "":
-        await message.channel.send(out_message)
+    await message.channel.send(embed=retriever_embed)

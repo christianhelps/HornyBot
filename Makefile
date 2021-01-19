@@ -8,12 +8,11 @@ usage:
   
 install:
 	python3 -m pip install -U discord.py --user
-	python3 -m pip install -U psutil --user
 	mkdir -p keys
 	chmod 755 startup
   
 run:
-	python GoodBot/goodbot.py
+	python HornyBot/hornybot.py
   
 clean:
 	# This intentionally fails when keys haven't been cleaned-up.

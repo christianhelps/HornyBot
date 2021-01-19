@@ -1,32 +1,29 @@
 #!/usr/bin/env bash
 
-echo "Initiating startup sequence for Horny."
+echo "Initiating startup sequence for HornyBot."
 
 echo "Terminating any existing instances..."
 pkill -f "hornybot"
 
+rm nohup.out
+
 echo "Checking for API keys..."
+
 KEY_DIR="keys"
+KEYS="discord-key google-key search-id"
 
-KEY="$KEY_DIR/discord-key"
-if test -f "$KEY"; 
-then
-    echo "$KEY found. Proceeding."
-else
-    echo "$KEY not found. Exiting."
-    exit
-fi
-
-KEY="$KEY_DIR/google-key"
-if test -f "$KEY"; 
-then
-    echo "$KEY found. Proceeding."
-else
-    echo "$KEY not found. Exiting."
-    exit
-fi
+for key in $KEYS;
+do
+	if test -f "$KEY_DIR/$key"; 
+	then
+		echo "$KEY_DIR/$key found. Proceeding."
+	else
+		echo "$KEY_DIR/$key not found. Exiting."
+		exit
+	fi
+done
 
 echo "Launching the bot..."
 
-# Put a while loop here, checking for return codes?
-nohup python3 HornyBot/hornybot.py &
+# Using nohup.out as somewhat of a logfile for now.
+nohup python3 HornyBot/hornybot.py > /dev/null 2>&1 & 
