@@ -32,10 +32,14 @@ async def spank(message):
     engine_file = open('keys/search-id', 'r') 
     ENGINE_ID = engine_file.readline()[:-1]
 
+
     json_request = {
         "key": GOOGLE_TOKEN,
         "cx": ENGINE_ID,
-        "q": "bondage spanking gif"
+        "q": "bondage spanking gif",
+        "searchType": "image",
+        "imgType": "animated",
+        "start": str(random.randint(0,89))
     }
         #"domain": "google.com",
 
@@ -49,7 +53,15 @@ async def spank(message):
     retriever_embed.description = '{0.author.mention} spanks {0.mentions[0].mention}'.format(message)
     # retriever_embed.description = str(retriever_data['items'][random.randint(0,9)]['pagemap']['cse_image'][0]['src'])
     # list from 0-99, shuffle the list, and the access the indicies in a for loop.
-    for data in retriever_data['items'][random.randint(0,9)]['pagemap']:
+    gif_url = ''
+    rang = list(range(0,9))
+    random.shuffle(rang)
+    for index in rang:
+        image_url = retriever_data['items'][index]['link']
+        if 'gif' == image_url[-3:]:
+            gif_url = image_url
+            print(gif_url)
+            break
     
     # gif_url = str(retriever_data['items'][random.randint(0,9)]['pagemap']['cse_image'][0]['src'])
     retriever_embed.set_image(url = gif_url)
