@@ -25,45 +25,58 @@ async def help(message):
     await message.channel.send("Commands: " + ', '.join(command_list))
 
 
-async def spank(message):
-    keyfile = open('keys/google-key', 'r') 
-    GOOGLE_TOKEN = keyfile.readline()[:-1]
-
-    engine_file = open('keys/search-id', 'r') 
-    ENGINE_ID = engine_file.readline()[:-1]
-
-
+def add_gif_to_db(message, command):
     json_request = {
-        "key": GOOGLE_TOKEN,
-        "cx": ENGINE_ID,
-        "q": "bondage spanking gif",
-        "searchType": "image",
-        "imgType": "animated",
-        "start": str(random.randint(0,89))
+        "catagory": command,
+        "url": message.content.split(' ')[2],
+        "addedBy": message.author.name
     }
-        #"domain": "google.com",
-
-    response = requests.get(url = "https://www.googleapis.com/customsearch/v1", params = json_request) 
-    retriever_data = response.json()
-
-    #"api_key": os.getenv("GOOGLE_TOKEN")
-
-    retriever_embed = discord.Embed(colour = discord.Color.blue())
-    retriever_embed.title = "Spank!"
-    retriever_embed.description = '{0.author.mention} spanks {0.mentions[0].mention}'.format(message)
-    # retriever_embed.description = str(retriever_data['items'][random.randint(0,9)]['pagemap']['cse_image'][0]['src'])
-    # list from 0-99, shuffle the list, and the access the indicies in a for loop.
-    gif_url = ''
-    rang = list(range(0,9))
-    random.shuffle(rang)
-    for index in rang:
-        image_url = retriever_data['items'][index]['link']
-        if 'gif' == image_url[-3:]:
-            gif_url = image_url
-            print(gif_url)
-            break
     
-    # gif_url = str(retriever_data['items'][random.randint(0,9)]['pagemap']['cse_image'][0]['src'])
-    retriever_embed.set_image(url = gif_url)
+    print(json_request)
+    requests.post(url = "http://10.0.0.29:3000/gifs", data = json_request) 
 
-    await message.channel.send(embed=retriever_embed)
+
+def gif_add(message, command):
+    if "add" == message.content.split(' ')[1]:
+        add_gif_to_db(message, command)
+        return True
+    else:
+        return False
+
+
+def get_db_gif_url(command):
+    response = requests.get(url = "http://10.0.0.29:3000/gifs",
+        params = { "catagory": command }
+        )
+    data = response.json()
+    return random.choice(data)['url']
+
+
+async def handle_gif_embed(message, command):
+    if gif_add(message, command):
+        return
+
+    if 0 == len(message.mentions):
+        err_embed = discord.Embed()
+        err_embed.description = "Must ping a user to " + command + ", or provide a URL with 'add [URL]'"
+        await message.channel.send(embed=err_embed)
+        return 
+
+    gif_embed = discord.Embed(colour = discord.Color.blue())
+
+    gif_url=get_db_gif_url(command)
+    gif_embed.set_image(url = gif_url)
+
+    gif_embed.title = ""
+    gif_embed.description = '{0.author.mention} '.format(message) + command + 's {0.mentions[0].mention}'.format(message)
+
+    await message.channel.send(embed=gif_embed)
+    return
+
+
+async def spank(message):
+    await handle_gif_embed(message, "spank")
+
+
+async def kiss(message):
+    await handle_gif_embed(message, "kiss")
